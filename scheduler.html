@@ -1,0 +1,968 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>סידור עבודה חכם · אבטחה</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700;900&family=Rubik:wght@400;500;700&display=swap');
+
+:root {
+  --bg: #0f1117; --surface: #1a1d27; --surface-2: #232734; --surface-3: #2d3340;
+  --border: #333949; --text: #e8eaf0; --text-dim: #9499a8; --text-faint: #5f6577;
+  --accent: #ff6b4a; --accent-soft: #ff6b4a22; --teal: #2dd4bf; --teal-soft: #2dd4bf22;
+  --amber: #fbbf24; --amber-soft: #fbbf2422; --violet: #a78bfa; --green: #4ade80;
+  --green-soft: #4ade8022; --red: #f87171; --red-soft: #f8717122;
+  --shift-morning: #4ade80; --shift-afternoon: #3b9eff; --shift-night: #fbbf24;
+  --shadow: 0 10px 40px rgba(0,0,0,0.4); --radius: 14px;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: 'Heebo', sans-serif; background: var(--bg);
+  background-image: radial-gradient(circle at 15% 10%, #1e2230 0%, transparent 40%),
+                    radial-gradient(circle at 85% 90%, #1a2628 0%, transparent 45%);
+  background-attachment: fixed; color: var(--text); line-height: 1.5; min-height: 100vh;
+}
+header {
+  display: flex; align-items: center; justify-content: space-between; padding: 18px 30px;
+  background: rgba(26,29,39,0.85); backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100;
+}
+.logo { display: flex; align-items: center; gap: 12px; }
+.logo-mark {
+  width: 38px; height: 38px; border-radius: 10px;
+  background: linear-gradient(135deg, var(--accent), #ff9472);
+  display: grid; place-items: center; font-weight: 900; font-size: 20px; color: #fff;
+  box-shadow: 0 4px 14px var(--accent-soft);
+}
+.logo h1 { font-size: 20px; font-weight: 900; letter-spacing: -0.5px; }
+.logo span { color: var(--text-dim); font-size: 12px; font-weight: 400; display: block; margin-top: -2px;}
+.role-switch { display: flex; gap: 6px; background: var(--surface-2); padding: 5px; border-radius: 12px; }
+.role-switch button {
+  border: none; background: transparent; color: var(--text-dim); padding: 9px 20px;
+  border-radius: 8px; cursor: pointer; font-family: inherit; font-size: 14px; font-weight: 500; transition: all .2s;
+}
+.role-switch button.active { background: var(--accent); color: #fff; box-shadow: 0 3px 10px var(--accent-soft); }
+.role-switch button:not(.active):hover { color: var(--text); }
+.container { max-width: 1280px; margin: 0 auto; padding: 26px 30px 60px; }
+.view { display: none; animation: fade .4s ease; }
+.view.active { display: block; }
+@keyframes fade { from { opacity: 0; transform: translateY(8px);} to {opacity:1; transform: none;} }
+.section-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; flex-wrap: wrap; gap: 12px;}
+.section-head h2 { font-size: 24px; font-weight: 900; letter-spacing: -0.5px; }
+.section-head p.sub { color: var(--text-dim); font-size: 14px; margin-top: 2px; }
+.btn { border: none; border-radius: 10px; cursor: pointer; font-family: inherit; font-size: 14px; font-weight: 700; padding: 11px 20px; transition: all .2s; display: inline-flex; align-items: center; gap: 8px; }
+.btn-primary { background: var(--accent); color: #fff; }
+.btn-primary:hover { background: #ff7d5e; transform: translateY(-1px); box-shadow: 0 6px 18px var(--accent-soft); }
+.btn-ghost { background: var(--surface-2); color: var(--text); border: 1px solid var(--border); }
+.btn-ghost:hover { background: var(--surface-3); }
+.btn:disabled { opacity: .5; cursor: not-allowed; transform: none !important; }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 22px; }
+.grid-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px,1fr)); gap: 14px; margin-bottom: 24px; }
+.stat { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px 20px; position: relative; overflow: hidden;}
+.stat::before { content:''; position:absolute; inset: 0 auto 0 0; width: 4px; background: var(--accent); }
+.stat.teal::before { background: var(--teal); } .stat.amber::before { background: var(--amber); } .stat.green::before { background: var(--green); }
+.stat .num { font-size: 30px; font-weight: 900; letter-spacing: -1px; }
+.stat .lbl { color: var(--text-dim); font-size: 13px; margin-top: 2px; }
+.cal-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 22px; overflow-x: auto; }
+.cal-grid { display: grid; grid-template-columns: 124px repeat(7, minmax(158px,1fr)); gap: 10px; min-width: 1200px; }
+.cal-head { font-weight: 700; font-size: 15px; color: var(--text-dim); text-align: center; padding: 10px 0; }
+.cal-head .date { display:block; font-size: 22px; color: var(--text); font-weight: 900; letter-spacing:-.5px; }
+.cal-head.weekend { color: var(--amber); }
+.cal-head.weekend .date { color: var(--amber); }
+.cal-corner { font-size: 13px; color: var(--text-faint); display: grid; place-items: center; font-weight:600;}
+.cal-rowlabel { display: flex; flex-direction: column; align-items: flex-start; justify-content: center; padding: 0 8px; font-weight: 800; font-size: 17px;}
+.cal-rowlabel small { color: var(--text-faint); font-weight: 500; font-size: 12px; margin-top:2px;}
+.shift-icon { font-size: 20px; }
+.cell { background: var(--surface-2); border: 1px solid var(--border); border-radius: 14px; min-height: 92px; padding: 10px; display: flex; flex-direction: column; gap: 7px; transition: all .15s; cursor: pointer; position: relative; }
+.cell:hover { border-color: var(--accent); background: var(--surface-3); }
+.cell.morning { box-shadow: inset 4px 0 0 var(--shift-morning); }
+.cell.afternoon { box-shadow: inset 4px 0 0 var(--shift-afternoon); }
+.cell.night { box-shadow: inset 4px 0 0 var(--shift-night); }
+.cell.weekend { background: #1d2230; }
+/* modern assignment chip with avatar + larger text */
+.slot { font-size: 14px; padding: 7px 10px; border-radius: 10px; font-weight: 700; display: flex; align-items: center; gap: 8px; line-height: 1.2; background: var(--surface-3); }
+.slot .av { width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; font-size: 11px; font-weight: 800; color:#fff; flex-shrink:0; }
+.slot .who { display:flex; flex-direction:column; gap:1px; overflow:hidden;}
+.slot .who b { font-size:14px; font-weight:800; white-space:nowrap;}
+.slot .pos { font-size: 11px; opacity:.65; font-weight:600; white-space:nowrap; }
+.slot.boss { background: linear-gradient(90deg,var(--accent-soft),transparent); color: #ffc4b3; border: 1px solid #5c3328; }
+.slot.guard { background: linear-gradient(90deg,var(--teal-soft),transparent); color: #9defdf; border: 1px solid #1a5a52; }
+.slot.empty { background: transparent; border: 1.5px dashed #5c3a3a; color: var(--red); justify-content: center; font-size:12.5px; font-weight:700; padding:9px; }
+.slot.empty:hover { border-color: var(--red); background: var(--red-soft); }
+.slot .dot { display:none; }
+.legend { display: flex; gap: 18px; flex-wrap: wrap; margin: 14px 2px; font-size: 13px; color: var(--text-dim); }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.legend i { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
+table { width: 100%; border-collapse: collapse; font-size: 14px; }
+th { text-align: right; padding: 12px 14px; color: var(--text-dim); font-weight: 500; font-size: 13px; border-bottom: 1px solid var(--border); }
+td { padding: 13px 14px; border-bottom: 1px solid var(--surface-2); }
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: var(--surface-2); }
+.role-tag { font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 20px; display: inline-block; }
+.emp-name { cursor:pointer; transition:color .15s; }
+.emp-name:hover { color: var(--accent); }
+.stepper { display:inline-flex; align-items:center; gap:2px; background:var(--surface-2); border:1px solid var(--border); border-radius:9px; padding:2px; }
+.stepper button { width:26px; height:26px; border:none; border-radius:7px; background:var(--surface-3); color:var(--text); font-size:16px; font-weight:700; cursor:pointer; line-height:1; transition:all .12s; }
+.stepper button:hover { background:var(--accent); color:#fff; }
+.stepper span { min-width:24px; text-align:center; font-weight:800; font-size:15px; }
+.role-tag.boss { background: var(--accent-soft); color: #ffb39c; }
+.role-tag.guard { background: var(--teal-soft); color: #7eeadb; }
+.quota-bar { height: 7px; background: var(--surface-3); border-radius: 4px; overflow: hidden; margin-top: 5px; max-width: 130px;}
+.quota-fill { height: 100%; background: var(--teal); border-radius: 4px; transition: width .6s ease; }
+.quota-fill.over { background: var(--red); }
+.avatar { width: 30px; height: 30px; border-radius: 50%; display: inline-grid; place-items: center; font-weight: 700; font-size: 12px; color:#fff; margin-left: 8px; vertical-align: middle;}
+.solver-panel { margin-top: 20px; }
+.log { background: #0b0d13; border: 1px solid var(--border); border-radius: 10px; font-family: 'Rubik', monospace; font-size: 12.5px; padding: 16px; max-height: 280px; overflow-y: auto; line-height: 1.7; }
+.log-line { display: flex; gap: 8px; opacity: 0; animation: logIn .3s forwards; }
+@keyframes logIn { to { opacity: 1; } }
+.log .t { color: var(--text-faint); flex-shrink: 0;}
+.log .ok { color: var(--green); } .log .warn { color: var(--amber); } .log .err { color: var(--red); } .log .info { color: var(--teal); } .log .hl { color: var(--accent); font-weight: 700;}
+.score-row { display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 18px; }
+.score-pill { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 12px 18px; flex: 1; min-width: 150px;}
+.score-pill .v { font-size: 24px; font-weight: 900;}
+.score-pill .k { font-size: 12px; color: var(--text-dim);}
+.toast { position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%) translateY(90px); background: var(--surface-3); border: 1px solid var(--border); color: var(--text); padding: 14px 24px; border-radius: 12px; box-shadow: var(--shadow); font-weight: 500; transition: transform .35s cubic-bezier(.2,1.2,.3,1); z-index: 200; max-width: 90vw; text-align:center;}
+.toast.show { transform: translateX(-50%) translateY(0); }
+.toast.ok { border-color: var(--green); } .toast.warn { border-color: var(--amber); } .toast.err { border-color: var(--red); }
+.tabs { display: flex; gap: 4px; margin-bottom: 20px; border-bottom: 1px solid var(--border); flex-wrap:wrap;}
+.tabs button { background: transparent; border: none; color: var(--text-dim); cursor: pointer; font-family: inherit; font-size: 14px; font-weight: 500; padding: 12px 18px; border-bottom: 2px solid transparent; margin-bottom: -1px; transition: all .2s; }
+.tabs button.active { color: var(--accent); border-bottom-color: var(--accent); }
+.tabs button:hover:not(.active) { color: var(--text); }
+.subview { display: none; } .subview.active { display: block; }
+.hint { background: var(--surface-2); border-right: 3px solid var(--teal); padding: 12px 16px; border-radius: 8px; font-size: 13px; color: var(--text-dim); margin-bottom: 18px;}
+.hint b { color: var(--text); }
+.emp-picker { display: flex; align-items: center; gap: 10px; }
+.emp-picker select { background: var(--surface-2); color: var(--text); border: 1px solid var(--border); border-radius: 10px; padding: 9px 14px; font-family: inherit; font-size: 14px; cursor: pointer; }
+footer { text-align: center; color: var(--text-faint); font-size: 12px; padding: 30px; border-top: 1px solid var(--border); margin-top: 40px;}
+
+/* ============ AVAILABILITY PANEL (זמינויות) — full width ============ */
+.z-panel {
+  border-radius: var(--radius); overflow:hidden; background:#0e1016;
+  border:1px solid var(--border);
+  background-image: radial-gradient(circle at 90% -10%, #1d2740 0%, transparent 40%);
+}
+/* hero */
+.z-hero { position:relative; padding: 22px 26px; overflow:hidden; }
+.z-hero-bg { position:absolute; inset:0; background:
+  radial-gradient(circle at 10% 0%, #ff6b4a44 0%, transparent 45%),
+  radial-gradient(circle at 95% 30%, #2dd4bf33 0%, transparent 45%),
+  linear-gradient(180deg,#1a1f2e,#12151e); }
+.z-hero-row { position:relative; display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; }
+.z-title { position:relative; font-size:26px; font-weight:900; letter-spacing:-.5px; color:#fff; }
+.z-weeknav { position:relative; display:flex; align-items:center; gap:12px; }
+.z-weeknav button { width:38px; height:38px; border-radius:50%; border:1px solid rgba(255,255,255,.18); background:rgba(255,255,255,.07); color:#fff; font-size:22px; line-height:1; cursor:pointer; transition:all .15s; }
+.z-weeknav button:hover:not(:disabled){ background:rgba(255,255,255,.16); }
+.z-weeknav button:disabled{ opacity:.28; cursor:not-allowed; }
+.z-weeklabel { text-align:center; min-width:170px; }
+.z-weeklabel span { display:block; font-size:16px; font-weight:800; color:#fff;}
+.z-weeklabel small { font-size:12px; color:#9fb4d8; }
+/* body */
+.z-body { padding: 22px 26px 26px; }
+.z-prog { margin-bottom:20px; }
+.z-prog-text { display:flex; justify-content:space-between; font-size:13px; color:#9499a8; margin-bottom:7px;}
+.z-prog-text b { color:#fff; font-size:15px;}
+.z-prog-bar { height:9px; background:#222734; border-radius:5px; overflow:hidden;}
+.z-prog-fill { height:100%; width:0%; border-radius:5px; background:linear-gradient(90deg,#4ade80,#3b9eff,#fbbf24); transition:width .5s cubic-bezier(.4,1.3,.5,1);}
+/* shift block */
+.z-shift { margin-bottom:16px; background:#171b24; border:1px solid #262c3a; border-radius:16px; overflow:hidden;}
+.z-shift-head {
+  display:flex; align-items:center; justify-content:space-between; padding:14px 20px; cursor:pointer;
+  background:linear-gradient(90deg, var(--sh) 0%, transparent 60%); transition:filter .15s; user-select:none;
+}
+.z-shift-head:hover{ filter:brightness(1.15); }
+.z-shift-head .nm { font-size:19px; font-weight:800; color:#fff; display:flex; align-items:center; gap:10px;}
+.z-shift-head .nm small { font-size:12px; color:#aeb6c6; font-weight:500;}
+.z-shift-head .toggle-all { font-size:12px; color:#cdd5e4; background:rgba(255,255,255,.08); padding:6px 14px; border-radius:20px; border:1px solid rgba(255,255,255,.12); transition:all .15s;}
+.z-shift-head .toggle-all:hover{ background:rgba(255,255,255,.16);}
+.z-days { display:grid; grid-template-columns:repeat(7,1fr); gap:8px; padding:14px 14px 16px; }
+.z-day { display:flex; flex-direction:column; align-items:center; gap:7px; cursor:pointer; padding:8px 0; border-radius:12px; transition:background .12s;}
+.z-day:hover { background:rgba(255,255,255,.04); }
+.z-day .dn { font-size:13px; color:#8b93a5; font-weight:700;}
+.z-day .dt { font-size:11px; color:#5f6577;}
+.z-day.weekend .dn { color:#fbbf24; }
+.z-pill { width:42px; height:42px; border-radius:13px; display:grid; place-items:center; font-size:20px; font-weight:900; transition:all .18s cubic-bezier(.4,1.4,.5,1);}
+.z-pill.no { background:#1e222d; border:1.5px solid #3a4150; color:#5f6577; }
+.z-pill.no::before{ content:'✕'; font-size:15px;}
+.z-pill.yes { color:#06302b; border:1.5px solid transparent; transform:scale(1.05);}
+.z-pill.yes::before{ content:'✓'; }
+.z-shift.morning .z-pill.yes { background:var(--shift-morning); box-shadow:0 4px 12px #4ade8055;}
+.z-shift.afternoon .z-pill.yes { background:var(--shift-afternoon); box-shadow:0 4px 12px #3b9eff55;}
+.z-shift.night .z-pill.yes { background:var(--shift-night); box-shadow:0 4px 12px #fbbf2455;}
+/* notes + actions */
+.z-notes { width:100%; min-height:70px; margin-top:4px; background:#171b24; border:1px solid #262c3a; border-radius:14px; padding:14px; color:#e8eaf0; font-family:inherit; font-size:14px; resize:vertical; text-align:right;}
+.z-notes::placeholder{ color:#5f6577; }
+.z-notes:focus{ outline:none; border-color:var(--teal); }
+.z-actions { display:grid; grid-template-columns:1fr 2fr; gap:12px; margin-top:16px; max-width:480px;}
+.z-btn { padding:14px; border:none; border-radius:14px; font-family:inherit; font-size:15px; font-weight:800; cursor:pointer; transition:all .15s;}
+.z-btn.ghost { background:#1e222d; color:#cdd5e4; border:1px solid #333949;}
+.z-btn.ghost:hover{ background:#262c3a;}
+.z-btn.save { background:linear-gradient(135deg,#2dd4bf,#22b8a6); color:#06302b; }
+.z-btn.save:hover{ filter:brightness(1.08); transform:translateY(-1px);}
+
+.req-summary { max-width: 560px; }
+.req-grid { display:grid; grid-template-columns: 1fr auto auto; gap:6px 14px; font-size:13px; align-items:center;}
+.req-grid .rh { color: var(--text-dim); font-weight:700; font-size:12px; padding-bottom:4px; border-bottom:1px solid var(--border);}
+.req-grid .ok { color: var(--green);} .req-grid .miss { color: var(--red); font-weight:700;}
+.req-cat { color: var(--text); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-mark">ש</div>
+    <div><h1>סידור חכם · אבטחה</h1><span>מערכת שיבוץ משמרות · אבטיפוס</span></div>
+  </div>
+  <div class="role-switch">
+    <button id="btnManager" class="active" onclick="switchRole('manager')">👔 מנהל</button>
+    <button id="btnEmployee" onclick="switchRole('employee')">👤 עובד</button>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- ============ MANAGER VIEW ============ -->
+  <div id="managerView" class="view active">
+    <div class="tabs">
+      <button class="active" onclick="mgrTab('schedule', this)">📅 הסידור</button>
+      <button onclick="mgrTab('employees', this)">👥 עובדים ומכסות</button>
+      <button onclick="mgrTab('availability', this)">📋 זמינויות שהוגשו</button>
+    </div>
+
+    <div id="mgr-schedule" class="subview active">
+      <div class="section-head">
+        <div><h2>סידור עבודה שבועי</h2><p class="sub">שבוע 25–31 במאי · עמדות אבטחה לפי שעות · לחיצה על משבצת ריקה לשיבוץ ידני</p></div>
+        <div style="display:flex; gap:10px;">
+          <button class="btn btn-ghost" onclick="clearSchedule()">🗑 נקה</button>
+          <button id="solveBtn" class="btn btn-primary" onclick="runSolver()">⚡ הפעל שיבוץ אוטומטי</button>
+        </div>
+      </div>
+      <div class="score-row" id="scoreRow" style="display:none;">
+        <div class="score-pill"><div class="v" id="sCoverage">—</div><div class="k">כיסוי עמדות</div></div>
+        <div class="score-pill"><div class="v" id="sHard">—</div><div class="k">הפרות אילוצים קשיחים</div></div>
+        <div class="score-pill"><div class="v" id="sBoss">—</div><div class="k">כיסוי אחמ"ש (07–23)</div></div>
+        <div class="score-pill"><div class="v" id="sFair">—</div><div class="k">מדד הוגנות</div></div>
+      </div>
+      <div class="legend">
+        <span><i style="background:var(--shift-morning)"></i> בוקר</span>
+        <span><i style="background:var(--shift-afternoon)"></i> צהריים</span>
+        <span><i style="background:var(--shift-night)"></i> לילה</span>
+        <span><i style="background:var(--accent)"></i> אחמ"ש</span>
+        <span><i style="background:var(--teal)"></i> מאבטח</span>
+        <span><i style="background:var(--red)"></i> עמדה לא מאוישת</span>
+      </div>
+      <div class="cal-wrap"><div class="cal-grid" id="mgrCalendar"></div></div>
+      <div class="card solver-panel">
+        <div class="section-head" style="margin-bottom:12px;"><h2 style="font-size:17px;">🔎 יומן הפותר (CSP Solver)</h2></div>
+        <div class="log" id="solverLog"><div class="log-line"><span class="t">[מוכן]</span><span>לחץ "הפעל שיבוץ אוטומטי" כדי לראות את האלגוריתם פותר את הסידור.</span></div></div>
+      </div>
+    </div>
+
+    <div id="mgr-employees" class="subview">
+      <div class="section-head">
+        <div><h2>צוות העובדים ומכסות החוזה</h2><p class="sub">ערוך שמות, מכסות חובה לפי סוג משמרת, ומקסימום — או הוסף עובד</p></div>
+        <button class="btn btn-primary" onclick="addEmployee()">＋ הוסף עובד</button>
+      </div>
+      <div class="hint">💡 לחץ על שם עובד כדי <b>לערוך</b> אותו. שנה את מספרי המכסה בכל קטגוריה — השינוי משפיע מיד על מה שאותו עובד חייב להגיש.</div>
+      <div class="card" style="overflow-x:auto;"><table id="empTable"></table></div>
+    </div>
+
+    <div id="mgr-availability" class="subview">
+      <div class="section-head"><div><h2>זמינויות שהוגשו</h2><p class="sub">כמה עובדים סימנו "יכול" לכל משמרת</p></div></div>
+      <div class="hint">💡 המספר מציג כמה עובדים זמינים לכל משמרת ביום, מול מספר העמדות הדרוש. ⛔ = חסומים.</div>
+      <div class="cal-wrap"><div class="cal-grid" id="availMatrix"></div></div>
+    </div>
+  </div>
+
+  <!-- ============ EMPLOYEE VIEW ============ -->
+  <div id="employeeView" class="view">
+    <div class="section-head">
+      <div><h2>שלום, <span id="empName">דנה</span> 👋</h2><p class="sub" id="empSub"></p></div>
+      <div class="emp-picker">
+        <span style="color:var(--text-dim);font-size:13px;">מציג כ:</span>
+        <select id="empSelect" onchange="loadEmployee()"></select>
+      </div>
+    </div>
+    <div class="grid-stats">
+      <div class="stat teal"><div class="num" id="empAssigned">0</div><div class="lbl">משמרות שובצו השבוע</div></div>
+      <div class="stat amber"><div class="num" id="empSubmitted">0/0</div><div class="lbl">זמינות שהוגשה (מין׳)</div></div>
+      <div class="stat"><div class="num" id="empMax">0</div><div class="lbl">מקסימום מותר</div></div>
+      <div class="stat green"><div class="num" id="empReqOk">—</div><div class="lbl">עמידה במכסת החובה</div></div>
+    </div>
+    <div class="tabs">
+      <button class="active" onclick="empTab('submit', this)">✍️ הגשת זמינות</button>
+      <button onclick="empTab('myschedule', this)">📅 הסידור שלי</button>
+    </div>
+
+    <div id="emp-submit" class="subview active">
+      <div class="hint">💡 כל המשמרות מתחילות כ-<b style="color:var(--red)">לא זמין</b>. לחיצה על משבצת הופכת ל-<b style="color:var(--green)">זמין</b>. לחיצה על שם המשמרת (<b style="color:#6cb4f0">בוקר / צהריים / לילה</b>) מסמנת את כל השורה. כל הימים נשארים על המסך. יש לעמוד במכסת החובה לפני שליחה.</div>
+
+      <div class="z-panel">
+        <div class="z-hero">
+          <div class="z-hero-bg"></div>
+          <div class="z-hero-row">
+            <div class="z-title">זמינויות</div>
+            <div class="z-weeknav">
+              <button id="zPrev" onclick="weekShift(-1)" title="שבוע קודם">‹</button>
+              <div class="z-weeklabel"><span id="zWeekRange">25–31 במאי 2026</span><small id="zWeekTag">השבוע</small></div>
+              <button id="zNext" onclick="weekShift(1)" title="שבוע הבא">›</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="z-body">
+          <div class="z-prog">
+            <div class="z-prog-text"><span>השלמת מכסת חובה</span><b id="zProgPct">0%</b></div>
+            <div class="z-prog-bar"><div class="z-prog-fill" id="zProgFill"></div></div>
+          </div>
+
+          <div id="z-shifts"></div>
+
+          <textarea class="z-notes" id="zNotes" oninput="weekNotes[weekOffset]=this.value" placeholder="הערות לסידור (לדוגמה: אין לי הסעה אחרי 22:00)..."></textarea>
+
+          <div class="z-actions">
+            <button class="z-btn ghost" onclick="clearAvailability()">נקה הכל</button>
+            <button class="z-btn save" onclick="submitAvailability()">שמירה ושליחה</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card req-summary" style="margin-top:22px;">
+        <h3 style="font-size:15px; margin-bottom:12px;">📋 מכסת חובה לפי החוזה שלך</h3>
+        <div class="req-grid" id="reqGrid"></div>
+      </div>
+    </div>
+
+    <div id="emp-myschedule" class="subview">
+      <div class="hint">💡 הסידור שאושר. ניתן להציע החלפת משמרת לעמית.</div>
+      <div class="cal-wrap"><div class="cal-grid" id="empSchedule"></div></div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<footer>אבטיפוס · אלגוריתם CSP במימוש JavaScript להדגמה · במערכת אמיתית: Python + OR-Tools CP-SAT</footer>
+
+<script>
+/* =====================================================================
+   DATA MODEL
+   ===================================================================== */
+const DAYS  = ['ראשון','שני','שלישי','רביעי','חמישי','שישי','שבת'];
+const DSHORT= ['א׳','ב׳','ג׳','ד׳','ה׳','ו׳','ש׳'];
+const DATES = ['25/5','26/5','27/5','28/5','29/5','30/5','31/5'];
+const WEEKEND_DAYS = [5,6];
+const isWeekend = d => WEEKEND_DAYS.includes(d);
+
+const SHIFT_GROUPS = [
+  { id:'morning',   name:'בוקר',   icon:'☀️' },
+  { id:'afternoon', name:'צהריים', icon:'🌆' },
+  { id:'night',     name:'לילה',   icon:'🌙' },
+];
+
+// role: 'boss' = אחמ"ש, 'guard' = מאבטח
+const POSITIONS = {
+  morning: [
+    { key:'m_boss',   label:'אחמ"ש',   role:'boss',  start:'07:00', end:'15:00' },
+    { key:'m_patrol1',label:'סייר 1',  role:'guard', start:'07:00', end:'15:00' },
+    { key:'m_recep',  label:'קבלה',    role:'guard', start:'07:00', end:'15:00' },
+    { key:'m_patrol2',label:'סייר 2',  role:'guard', start:'07:00', end:'19:00' },
+    { key:'m_extra',  label:'מאבטח',   role:'guard', start:'09:00', end:'18:00' },
+  ],
+  afternoon: [
+    { key:'a_boss', label:'מחליף אחמ"ש', role:'boss',  start:'15:00', end:'23:00' },
+    { key:'a_g1',   label:'מאבטח',       role:'guard', start:'15:00', end:'23:00' },
+    { key:'a_g2',   label:'מאבטח',       role:'guard', start:'15:00', end:'23:00' },
+  ],
+  night: [
+    { key:'n_g1', label:'מאבטח', role:'guard', start:'23:00', end:'07:00' },
+    { key:'n_g2', label:'מאבטח', role:'guard', start:'23:00', end:'07:00' },
+  ],
+};
+// WEEKEND (שישי/שבת): every shift is just 2 guards, NO אחמ"ש required.
+const WEEKEND_POSITIONS = {
+  morning: [
+    { key:'wm_g1', label:'מאבטח', role:'guard', start:'07:00', end:'15:00' },
+    { key:'wm_g2', label:'מאבטח', role:'guard', start:'07:00', end:'15:00' },
+  ],
+  afternoon: [
+    { key:'wa_g1', label:'מאבטח', role:'guard', start:'15:00', end:'23:00' },
+    { key:'wa_g2', label:'מאבטח', role:'guard', start:'15:00', end:'23:00' },
+  ],
+  night: [
+    { key:'wn_g1', label:'מאבטח', role:'guard', start:'23:00', end:'07:00' },
+    { key:'wn_g2', label:'מאבטח', role:'guard', start:'23:00', end:'07:00' },
+  ],
+};
+// day-aware position list: weekend uses the simplified structure
+function posList(d, groupId){ return isWeekend(d) ? WEEKEND_POSITIONS[groupId] : POSITIONS[groupId]; }
+function toMin(t){ const [h,m]=t.split(':').map(Number); return h*60+m; }
+function posInterval(d, grp, pos){
+  let s=d*1440+toMin(pos.start), e=d*1440+toMin(pos.end);
+  if(e<=s) e+=1440;
+  return [s,e];
+}
+
+const EMPLOYEES = [
+  { id:'e1', name:'דנה לוי',     role:'boss', color:'#ff6b4a' },
+  { id:'e2', name:'יוסי כהן',    role:'boss', color:'#fbbf24' },
+  { id:'e3', name:'מאיה אברהם',  role:'boss', color:'#a78bfa' },
+  { id:'e4', name:'איתי שמש',    role:'guard',color:'#2dd4bf' },
+  { id:'e5', name:'נועה פרידמן', role:'guard',color:'#4ade80' },
+  { id:'e6', name:'עומר דהן',    role:'guard',color:'#60a5fa' },
+  { id:'e7', name:'ליהי ברק',    role:'guard',color:'#f472b6' },
+  { id:'e8', name:'רון מזרחי',   role:'guard',color:'#fb923c' },
+  { id:'e9', name:'שירה גל',     role:'guard',color:'#34d399' },
+  { id:'e10',name:'טל אבני',     role:'guard',color:'#22d3ee' },
+  { id:'e11',name:'אורי נחום',   role:'boss', color:'#e879f9' },
+  { id:'e12',name:'גיא רוזן',    role:'guard',color:'#facc15' },
+  { id:'e13',name:'מורן ביטון',  role:'guard',color:'#a3e635' },
+  { id:'e14',name:'אדם כץ',      role:'guard',color:'#38bdf8' },
+  { id:'e15',name:'יעל הראל',    role:'guard',color:'#fb7185' },
+];
+
+function defaultQuota(role){
+  return {
+    midweek:{ morning:3, afternoon:3, night: role==='boss'?0:2 },
+    weekend:{ total:2 },
+    max: role==='boss' ? 6 : 7
+  };
+}
+EMPLOYEES.forEach(e=> e.quota=defaultQuota(e.role));
+EMPLOYEES[7].quota={ midweek:{morning:2,afternoon:2,night:1}, weekend:{total:1}, max:5 };
+EMPLOYEES[3].quota={ midweek:{morning:3,afternoon:2,night:2}, weekend:{total:2}, max:7 };
+
+function quotaTotal(e){ const m=e.quota.midweek; return m.morning+m.afternoon+m.night+e.quota.weekend.total; }
+
+let availability={};
+let assignments={};
+
+function seedAvailability(){
+  availability={};
+  EMPLOYEES.forEach(e=>{
+    availability[e.id]={};
+    for(let d=0; d<7; d++){
+      availability[e.id][d]={};
+      SHIFT_GROUPS.forEach(g=>{
+        if(g.id==='night' && e.role==='boss'){ availability[e.id][d][g.id]=false; return; }
+        availability[e.id][d][g.id]=Math.random()<0.55;
+      });
+    }
+  });
+  EMPLOYEES.forEach(e=> enforceQuotaSeed(e));
+}
+function enforceQuotaSeed(e){
+  ['morning','afternoon','night'].forEach(g=>{
+    const need=e.quota.midweek[g]; let have=countAvail(e.id,'midweek',g), guard=0;
+    while(have<need && guard<40){ guard++; const d=Math.floor(Math.random()*5); if(!availability[e.id][d][g]){ availability[e.id][d][g]=true; have++; } }
+  });
+  let needW=e.quota.weekend.total, haveW=countAvail(e.id,'weekend'), guard=0;
+  while(haveW<needW && guard<40){ guard++; const d=5+Math.floor(Math.random()*2); const g=SHIFT_GROUPS[Math.floor(Math.random()*(e.role==='boss'?2:3))].id; if(!availability[e.id][d][g]){ availability[e.id][d][g]=true; haveW++; } }
+}
+function countAvail(empId, scope, group){
+  let n=0;
+  for(let d=0; d<7; d++){
+    const wk=isWeekend(d);
+    if(scope==='midweek' && wk) continue;
+    if(scope==='weekend' && !wk) continue;
+    SHIFT_GROUPS.forEach(g=>{ if(group && g.id!==group) return; if(availability[empId]?.[d]?.[g.id]) n++; });
+  }
+  return n;
+}
+
+/* ---- per-week availability store ----
+   `availability` always reflects the CURRENTLY displayed week (weekOffset).
+   weekStore[weekOffset] holds a saved snapshot of each past/other week so
+   navigating back shows what was actually marked then, not the same data. */
+let weekStore = {};
+function snapshotCurrentWeek(){
+  // deep-clone current availability into the store under the current offset
+  weekStore[weekOffset] = JSON.parse(JSON.stringify(availability));
+}
+function loadWeek(offset){
+  if(weekStore[offset]){
+    availability = JSON.parse(JSON.stringify(weekStore[offset]));
+  } else {
+    // first visit to this week: generate plausible historical data (past weeks)
+    // future week (offset 1) starts empty so the employee fills it fresh.
+    if(offset > 0){
+      EMPLOYEES.forEach(e=>{ availability[e.id]={}; for(let d=0;d<7;d++){ availability[e.id][d]={}; SHIFT_GROUPS.forEach(g=> availability[e.id][d][g.id]=false); } });
+    } else {
+      seedAvailability(); // realistic filled data for a historical week
+    }
+    weekStore[offset]=JSON.parse(JSON.stringify(availability));
+  }
+}
+function emptyAssignments(){
+  assignments={};
+  for(let d=0; d<7; d++){ assignments[d]={}; SHIFT_GROUPS.forEach(g=>{ assignments[d][g.id]={}; posList(d,g.id).forEach(p=> assignments[d][g.id][p.key]=null); }); }
+}
+
+/* =====================================================================
+   CSP SOLVER (JS demo of OR-Tools CP-SAT model)
+   ===================================================================== */
+function logReset(){ document.getElementById('solverLog').innerHTML=''; }
+function log(msg, cls='', delay=0){
+  return new Promise(res=>setTimeout(()=>{
+    const el=document.getElementById('solverLog');
+    const time=new Date().toLocaleTimeString('he-IL',{hour12:false});
+    const line=document.createElement('div'); line.className='log-line';
+    line.innerHTML=`<span class="t">[${time}]</span><span class="${cls}">${msg}</span>`;
+    el.appendChild(line); el.scrollTop=el.scrollHeight; res();
+  }, delay));
+}
+function empIntervals(empId){
+  const out=[];
+  for(let d=0; d<7; d++) SHIFT_GROUPS.forEach(g=> posList(d,g.id).forEach(p=>{ if(assignments[d][g.id][p.key]===empId) out.push(posInterval(d,g.id,p)); }));
+  return out;
+}
+function overlaps(a,b){ return a[0]<b[1] && b[0]<a[1]; }
+function violatesRest(empId, newIv){
+  const REST=8*60;
+  for(const iv of empIntervals(empId)){
+    if(overlaps(iv,newIv)) return true;
+    const gap = newIv[0]>=iv[1] ? newIv[0]-iv[1] : iv[0]-newIv[1];
+    if(gap<REST) return true;
+  }
+  return false;
+}
+function countWeek(empId){ let n=0; for(let d=0;d<7;d++) SHIFT_GROUPS.forEach(g=>posList(d,g.id).forEach(p=>{ if(assignments[d][g.id][p.key]===empId)n++; })); return n; }
+function canAssign(empId, d, grp, pos){
+  const e=EMPLOYEES.find(x=>x.id===empId);
+  if(e.role!==pos.role) return {ok:false,why:'תפקיד'};
+  if(!availability[empId]?.[d]?.[grp]) return {ok:false,why:'לא זמין'};
+  if(violatesRest(empId, posInterval(d,grp,pos))) return {ok:false,why:'חפיפה/מנוחה'};
+  if(countWeek(empId)>=e.quota.max) return {ok:false,why:'מקסימום'};
+  return {ok:true};
+}
+function candidateCost(empId, d){
+  let cost=countWeek(empId)*1.5;
+  if(isWeekend(d)){ let w=0; for(const dd of WEEKEND_DAYS) SHIFT_GROUPS.forEach(g=>posList(dd,g.id).forEach(p=>{ if(assignments[dd][g.id][p.key]===empId)w++; })); cost+=w*3; }
+  return cost;
+}
+
+// REPAIR step: an empty slot has candidates who are only blocked by ONE other
+// assignment that overlaps. Try to move that blocking assignment to a free
+// substitute, which frees the candidate to take the hard slot.
+function tryRepair(slot){
+  const {d,g,p}=slot;
+  const newIv=posInterval(d,g,p);
+  // candidates: right role + available + under max, but currently rest/overlap-blocked
+  const blocked=EMPLOYEES.filter(e=>e.role==='guard' && availability[e.id]?.[d]?.[g] && countWeek(e.id)<e.quota.max && canAssign(e.id,d,g,p).why==='חפיפה/מנוחה');
+  for(const cand of blocked){
+    // find which of cand's current assignments conflicts with newIv
+    for(let dd=0; dd<7; dd++) for(const gg of SHIFT_GROUPS.map(x=>x.id)) for(const pp of posList(dd,gg)){
+      if(assignments[dd][gg][pp.key]!==cand.id) continue;
+      const iv=posInterval(dd,gg,pp);
+      const gap = newIv[0]>=iv[1] ? newIv[0]-iv[1] : iv[0]-newIv[1];
+      const conflicts = overlaps(iv,newIv) || gap < 8*60;
+      if(!conflicts) continue;
+      // try to hand pp (the blocking slot) to a substitute
+      assignments[dd][gg][pp.key]=null; // temporarily vacate
+      const subs=EMPLOYEES.filter(e=>e.id!==cand.id && e.role===pp.role && canAssign(e.id,dd,gg,pp).ok)
+                           .map(e=>({e,c:candidateCost(e.id,dd)})).sort((a,b)=>a.c-b.c);
+      if(subs.length && canAssign(cand.id,d,g,p).ok){
+        assignments[dd][gg][pp.key]=subs[0].e.id;   // substitute covers old slot
+        assignments[d][g][p.key]=cand.id;           // candidate takes the hard slot
+        return true;
+      }
+      assignments[dd][gg][pp.key]=cand.id; // revert
+    }
+  }
+  return false;
+}
+
+async function runSolver(){
+  const btn=document.getElementById('solveBtn'); btn.disabled=true; btn.textContent='⏳ פותר...';
+  emptyAssignments(); logReset();
+  await log('מאתחל מודל CSP — משתנים: עובד × עמדה × יום','info',100);
+  let totalSlots=0; for(let d=0;d<7;d++) SHIFT_GROUPS.forEach(g=> totalSlots+=posList(d,g.id).length);
+  await log(`${EMPLOYEES.length} עובדים · ${totalSlots} עמדות שבועיות (כולל שעות שונות לכל עמדה)`,'',250);
+  await log('אילוצים קשיחים: תפקיד · זמינות · חפיפת-שעות אמיתית · מנוחה 8ש׳ · מקסימום שבועי','info',350);
+  await log('הערה: חפיפה מחושבת לפי שעות אמת — סייר 2 (07–19) חוסם משמרת צהריים (15–23)','info',300);
+  await log('אילוצים רכים: הוגנות עומס · פיזור סופ"ש','info',250);
+  await log('היוריסטיקה: שיבוץ עמדות קשות-לאיוש תחילה (MRV) + שלב תיקון אוטומטי','info',300);
+  await log('— מתחיל שיבוץ: אחמ"שים תחילה (נדירים + חובה) —','hl',300);
+
+  let hardViolations=0, filledSlots=0;
+  for(let d=0; d<7; d++){
+    if(isWeekend(d)) continue; // סופ"ש: אין אחמ"ש בכלל
+    for(const g of ['morning','afternoon']){
+      for(const p of posList(d,g).filter(p=>p.role==='boss')){
+        const cands=EMPLOYEES.filter(e=>e.role==='boss').map(e=>({e,chk:canAssign(e.id,d,g,p)})).filter(x=>x.chk.ok).map(x=>({e:x.e,c:candidateCost(x.e.id,d)})).sort((a,b)=>a.c-b.c);
+        if(!cands.length){ hardViolations++; await log(`⚠ ${DAYS[d]} ${g==='morning'?'בוקר':'צהריים'} · ${p.label}: אין אחמ"ש זמין`,'warn',50); continue; }
+        assignments[d][g][p.key]=cands[0].e.id; filledSlots++;
+      }
+    }
+  }
+  await log('— שלב 2: מאבטחים (לפי קושי-איוש, עם תיקון אוטומטי) —','hl',400);
+  // Build the full list of guard slots, then repeatedly fill the HARDEST one
+  // (fewest eligible candidates = Minimum Remaining Values heuristic).
+  // This stops the solver from "burning" a worker on an easy slot before a hard one.
+  const guardSlots=[];
+  for(let d=0; d<7; d++) for(const g of SHIFT_GROUPS.map(x=>x.id)) for(const p of posList(d,g).filter(p=>p.role==='guard')) guardSlots.push({d,g,p});
+  let remaining=guardSlots.slice();
+  while(remaining.length){
+    // recompute candidate counts each round (state changes as we assign)
+    let best=null, bestCands=null;
+    for(const slot of remaining){
+      const cands=EMPLOYEES.filter(e=>e.role==='guard').map(e=>({e,chk:canAssign(e.id,slot.d,slot.g,slot.p)})).filter(x=>x.chk.ok).map(x=>({e:x.e,c:candidateCost(x.e.id,slot.d)})).sort((a,b)=>a.c-b.c);
+      if(best===null || cands.length < bestCands.length){ best=slot; bestCands=cands; }
+      if(cands.length===0) break; // can't get harder than impossible
+    }
+    remaining=remaining.filter(s=>s!==best);
+    if(!bestCands.length){
+      // try a repair: can we move someone OUT of a conflicting slot to free them?
+      const fixed=tryRepair(best);
+      if(fixed){ filledSlots++; continue; }
+      hardViolations++;
+      await log(`⚠ ${DAYS[best.d]} ${SHIFT_GROUPS.find(s=>s.id===best.g).name} · ${best.p.label} (${best.p.start}-${best.p.end}): אין מאבטח זמין`,'warn',40);
+      continue;
+    }
+    assignments[best.d][best.g][best.p.key]=bestCands[0].e.id; filledSlots++;
+  }
+
+  let bossNeeded=0,bossFilled=0;
+  for(let d=0;d<7;d++){ if(isWeekend(d)) continue; for(const g of ['morning','afternoon']) posList(d,g).filter(p=>p.role==='boss').forEach(p=>{ bossNeeded++; if(assignments[d][g][p.key])bossFilled++; }); }
+  const counts=EMPLOYEES.map(e=>countWeek(e.id));
+  const avg=counts.reduce((a,b)=>a+b,0)/counts.length;
+  const variance=counts.reduce((a,b)=>a+(b-avg)**2,0)/counts.length;
+  const fairness=Math.max(0,100-Math.round(variance*12));
+
+  await log(`✓ אוישו ${filledSlots}/${totalSlots} עמדות`, hardViolations?'warn':'ok',350);
+  await log(`✓ כיסוי אחמ"ש: ${bossFilled}/${bossNeeded} (רצף 07:00–23:00, לילה ללא אחמ"ש כנדרש)`,'ok',250);
+  await log(`✓ מדד הוגנות: ${fairness}/100 (שונות עומס ${variance.toFixed(2)})`,'ok',200);
+  await log('— הפותר סיים · ניתן לערוך ידנית לפני אישור —','hl',300);
+
+  document.getElementById('scoreRow').style.display='flex';
+  document.getElementById('sCoverage').textContent=`${Math.round(filledSlots/totalSlots*100)}%`;
+  const sh=document.getElementById('sHard'); sh.textContent=hardViolations; sh.style.color=hardViolations?'var(--red)':'var(--green)';
+  document.getElementById('sBoss').textContent=`${bossFilled}/${bossNeeded}`;
+  document.getElementById('sFair').textContent=`${fairness}/100`;
+
+  renderMgrCalendar();
+  btn.disabled=false; btn.textContent='⚡ הפעל שיבוץ אוטומטי';
+  toast(hardViolations?'הסידור נוצר עם אזהרות — ראה יומן':'✓ סידור אופטימלי נוצר בהצלחה!', hardViolations?'warn':'ok');
+}
+function clearSchedule(){ emptyAssignments(); renderMgrCalendar(); document.getElementById('scoreRow').style.display='none'; logReset(); toast('הסידור נוקה'); }
+
+/* =====================================================================
+   RENDERING — manager
+   ===================================================================== */
+function calHeader(grid){
+  grid.innerHTML='';
+  const c=document.createElement('div'); c.className='cal-corner'; c.textContent='משמרת / יום'; grid.appendChild(c);
+  DAYS.forEach((d,i)=>{ const h=document.createElement('div'); h.className='cal-head'+(isWeekend(i)?' weekend':''); h.innerHTML=`${d}<span class="date">${DATES[i]}</span>`; grid.appendChild(h); });
+}
+function renderMgrCalendar(){
+  const grid=document.getElementById('mgrCalendar'); calHeader(grid);
+  SHIFT_GROUPS.forEach(g=>{
+    const rl=document.createElement('div'); rl.className='cal-rowlabel';
+    const mid=POSITIONS[g.id].length, wk=WEEKEND_POSITIONS[g.id].length;
+    rl.innerHTML=`<span class="shift-icon">${g.icon}</span> ${g.name}<small>אמצ״ש ${mid} · סופ״ש ${wk}</small>`;
+    grid.appendChild(rl);
+    for(let d=0; d<7; d++){
+      const cell=document.createElement('div'); cell.className=`cell ${g.id}`+(isWeekend(d)?' weekend':'');
+      posList(d,g.id).forEach(p=>{
+        const empId=assignments[d][g.id][p.key];
+        if(empId){
+          const e=EMPLOYEES.find(x=>x.id===empId);
+          const slot=document.createElement('div'); slot.className=`slot ${e.role}`;
+          slot.innerHTML=`<span class="av" style="background:${e.color}">${e.name[0]}</span>
+            <span class="who"><b>${e.name.split(' ')[0]}</b><span class="pos">${p.label} · ${p.start}–${p.end}</span></span>`;
+          cell.appendChild(slot);
+        } else {
+          const m=document.createElement('div'); m.className='slot empty';
+          m.innerHTML=`＋ ${p.label} · ${p.start}–${p.end}`;
+          cell.appendChild(m);
+        }
+      });
+      cell.onclick=()=>manualAssign(d,g.id);
+      grid.appendChild(cell);
+    }
+  });
+}
+function manualAssign(d,grp){
+  const emptyPos=posList(d,grp).find(p=>!assignments[d][grp][p.key]);
+  if(!emptyPos){ toast('כל העמדות במשמרת מאוישות','warn'); return; }
+  const cands=EMPLOYEES.filter(e=>canAssign(e.id,d,grp,emptyPos).ok);
+  if(!cands.length){ toast(`אין עובד זמין לעמדת ${emptyPos.label}`,'warn'); return; }
+  const names=cands.map((e,i)=>`${i+1}. ${e.name} (${e.role==='boss'?'אחמ"ש':'מאבטח'})`).join('\n');
+  const pick=prompt(`שיבוץ ידני — ${DAYS[d]} · ${emptyPos.label} (${emptyPos.start}-${emptyPos.end})\nבחר מספר עובד:\n\n${names}`);
+  const idx=parseInt(pick)-1;
+  if(idx>=0 && idx<cands.length){ assignments[d][grp][emptyPos.key]=cands[idx].id; renderMgrCalendar(); toast(`${cands[idx].name} שובץ לעמדת ${emptyPos.label}`,'ok'); }
+}
+function renderEmpTable(){
+  const t=document.getElementById('empTable');
+  t.innerHTML=`<thead><tr><th>עובד</th><th>תפקיד</th><th>שובץ</th><th>☀️ בוקר</th><th>🌆 צהריים</th><th>🌙 לילה</th><th>🏖 סופ"ש</th><th>סה"כ חובה</th><th>מקס׳</th></tr></thead><tbody></tbody>`;
+  const tb=t.querySelector('tbody');
+  EMPLOYEES.forEach(e=>{
+    const n=countWeek(e.id); const q=e.quota.midweek; const tot=quotaTotal(e); const pct=Math.min(100,Math.round(n/e.quota.max*100));
+    let cls=''; if(n>e.quota.max)cls='over';
+    const nightDisabled = e.role==='boss'; // boss has no night requirement
+    const tr=document.createElement('tr');
+    tr.innerHTML=`
+      <td><span class="avatar" style="background:${e.color}">${e.name[0]}</span><span class="emp-name" onclick="renameEmployee('${e.id}')" title="לחץ לשינוי שם">${e.name} ✏️</span></td>
+      <td><span class="role-tag ${e.role}" onclick="toggleRole('${e.id}')" style="cursor:pointer" title="לחץ להחלפת תפקיד">${e.role==='boss'?'אחמ"ש':'מאבטח'}</span></td>
+      <td><b style="font-size:16px">${n}</b><div class="quota-bar"><div class="quota-fill ${cls}" style="width:${pct}%"></div></div></td>
+      <td>${stepper(e.id,'morning',q.morning)}</td>
+      <td>${stepper(e.id,'afternoon',q.afternoon)}</td>
+      <td>${nightDisabled?'<span style="color:var(--text-faint);font-size:12px">— ללא —</span>':stepper(e.id,'night',q.night)}</td>
+      <td>${stepper(e.id,'weekend',e.quota.weekend.total)}</td>
+      <td><b style="font-size:16px">${tot}</b></td>
+      <td>${stepper(e.id,'max',e.quota.max)}</td>`;
+    tb.appendChild(tr);
+  });
+}
+// a +/- stepper control for a quota category
+function stepper(id, cat, val){
+  return `<div class="stepper">
+    <button onclick="setQuota('${id}','${cat}',-1)">−</button>
+    <span>${val}</span>
+    <button onclick="setQuota('${id}','${cat}',1)">＋</button>
+  </div>`;
+}
+function setQuota(id, cat, delta){
+  const e=EMPLOYEES.find(x=>x.id===id);
+  if(cat==='max'){ e.quota.max=Math.max(1,Math.min(14,e.quota.max+delta)); }
+  else if(cat==='weekend'){ e.quota.weekend.total=Math.max(0,Math.min(6,e.quota.weekend.total+delta)); }
+  else { e.quota.midweek[cat]=Math.max(0,Math.min(5,e.quota.midweek[cat]+delta)); }
+  renderEmpTable();
+  toast(`מכסת ${e.name.split(' ')[0]} עודכנה`,'ok');
+}
+function renameEmployee(id){
+  const e=EMPLOYEES.find(x=>x.id===id);
+  const name=prompt('שם העובד:', e.name);
+  if(name && name.trim()){ e.name=name.trim(); renderEmpTable(); buildEmpSelect(); toast('השם עודכן','ok'); }
+}
+function toggleRole(id){
+  const e=EMPLOYEES.find(x=>x.id===id);
+  e.role = e.role==='boss' ? 'guard' : 'boss';
+  if(e.role==='boss') e.quota.midweek.night=0; // boss has no night
+  renderEmpTable(); buildEmpSelect();
+  toast(`${e.name.split(' ')[0]} → ${e.role==='boss'?'אחמ"ש':'מאבטח'}`,'ok');
+}
+const PALETTE=['#ff6b4a','#fbbf24','#a78bfa','#2dd4bf','#4ade80','#60a5fa','#f472b6','#fb923c','#34d399','#22d3ee','#e879f9','#facc15','#a3e635','#38bdf8','#fb7185'];
+function addEmployee(){
+  const name=prompt('שם העובד החדש:');
+  if(!name || !name.trim()) return;
+  const role = confirm('האם העובד הוא אחמ"ש?\n(אישור = אחמ"ש · ביטול = מאבטח רגיל)') ? 'boss' : 'guard';
+  const id='e'+(Math.max(...EMPLOYEES.map(e=>parseInt(e.id.slice(1))))+1);
+  const color=PALETTE[EMPLOYEES.length % PALETTE.length];
+  const e={ id, name:name.trim(), role, color, quota: defaultQuota(role) };
+  EMPLOYEES.push(e);
+  // initialise availability for the new employee
+  availability[id]={};
+  for(let d=0; d<7; d++){ availability[id][d]={}; SHIFT_GROUPS.forEach(g=> availability[id][d][g.id]=false); }
+  enforceQuotaSeed(e);
+  // make sure empty assignment structure already covers them (assignments are per-slot, not per-emp, so fine)
+  renderEmpTable(); buildEmpSelect();
+  toast(`${e.name} נוסף כ${role==='boss'?'אחמ"ש':'מאבטח'}`,'ok');
+}
+function renderAvailMatrix(){
+  const grid=document.getElementById('availMatrix'); calHeader(grid);
+  SHIFT_GROUPS.forEach(g=>{
+    const rl=document.createElement('div'); rl.className='cal-rowlabel';
+    rl.innerHTML=`<span class="shift-icon">${g.icon}</span> ${g.name}<small>אמצ״ש ${POSITIONS[g.id].length} · סופ״ש ${WEEKEND_POSITIONS[g.id].length}</small>`;
+    grid.appendChild(rl);
+    for(let d=0; d<7; d++){
+      const cell=document.createElement('div'); cell.className='cell'+(isWeekend(d)?' weekend':'');
+      let yes=0,no=0; EMPLOYEES.forEach(e=>{ if(availability[e.id][d][g.id])yes++; else no++; });
+      const need=posList(d,g.id).length;
+      cell.innerHTML=`<div class="slot guard">${yes} זמינים</div>
+        <div style="font-size:12px;font-weight:700;color:${yes>=need?'var(--green)':'var(--red)'}">דרוש ${need} ${yes>=need?'✓':'⚠'}</div>
+        <div style="font-size:12px;color:var(--text-faint)">⛔ ${no} חסומים</div>`;
+      grid.appendChild(cell);
+    }
+  });
+}
+
+/* =====================================================================
+   EMPLOYEE VIEW — fresh mobile availability (זמינויות)
+   ===================================================================== */
+let currentEmp='e1';
+function buildEmpSelect(){
+  const sel=document.getElementById('empSelect'); sel.innerHTML='';
+  EMPLOYEES.forEach(e=>{ const o=document.createElement('option'); o.value=e.id; o.textContent=`${e.name} (${e.role==='boss'?'אחמ"ש':'מאבטח'})`; sel.appendChild(o); });
+  sel.value=currentEmp;
+}
+function loadEmployee(){
+  currentEmp=document.getElementById('empSelect').value;
+  const e=EMPLOYEES.find(x=>x.id===currentEmp);
+  document.getElementById('empName').textContent=e.name.split(' ')[0];
+  document.getElementById('empSub').textContent=`${e.role==='boss'?'אחראי משמרת':'מאבטח'} · חובה ${quotaTotal(e)} סימוני "יכול" · מקס׳ שיבוץ ${e.quota.max}`;
+  const noteEl=document.getElementById('zNotes'); if(noteEl) noteEl.value=(weekNotes[weekOffset]||'');
+  renderTabit(); renderReqSummary(); renderEmpSchedule(); updateEmpStats(); updateProgress(); updateWeekNav();
+}
+/* ---- week navigation: up to 52 weeks back, only 1 week forward ---- */
+let weekOffset = 0; // 0 = current week
+function weekShift(dir){
+  const next = weekOffset + dir;
+  if(next < -52 || next > 1) return; // limits
+  snapshotCurrentWeek();   // save what's marked for the week we're leaving
+  weekOffset = next;
+  loadWeek(weekOffset);    // bring in the target week's own marks
+  updateWeekNav();
+  refreshAvailUI();        // re-render grid/summary/progress for the loaded week
+  const noteEl=document.getElementById('zNotes');
+  if(noteEl) noteEl.value = (weekNotes[weekOffset]||'');
+  toast(weekOffset===0?'חזרת לשבוע הנוכחי':(weekOffset>0?'שבוע הבא':weekOffset===-1?'שבוע שעבר':`לפני ${-weekOffset} שבועות`));
+}
+// per-week free-text notes too
+let weekNotes = {};
+function updateWeekNav(){
+  const prev=document.getElementById('zPrev'), nxt=document.getElementById('zNext');
+  if(prev) prev.disabled = weekOffset <= -52;
+  if(nxt)  nxt.disabled  = weekOffset >= 1;
+  // shift the displayed dates by weekOffset*7 days from the base week (25–31 May 2026)
+  const base=new Date(2026,4,25);
+  const start=new Date(base); start.setDate(base.getDate()+weekOffset*7);
+  const end=new Date(start); end.setDate(start.getDate()+6);
+  const months=['ינו','פבר','מרץ','אפר','מאי','יונ','יול','אוג','ספט','אוק','נוב','דצמ'];
+  const rng=document.getElementById('zWeekRange');
+  if(rng) rng.textContent=`${start.getDate()}–${end.getDate()} ב${months[end.getMonth()]} ${end.getFullYear()}`;
+  const tag=document.getElementById('zWeekTag');
+  if(tag) tag.textContent = weekOffset===0?'השבוע' : weekOffset>0?'שבוע הבא' : weekOffset===-1?'שבוע שעבר':`לפני ${-weekOffset} שבועות`;
+}
+function updateEmpStats(){
+  const e=EMPLOYEES.find(x=>x.id===currentEmp);
+  const n=countWeek(e.id); const sub=countAvail(e.id);
+  document.getElementById('empAssigned').textContent=n;
+  document.getElementById('empSubmitted').textContent=`${sub}/${quotaTotal(e)}`;
+  document.getElementById('empMax').textContent=e.quota.max;
+  const {ok}=checkQuota(e);
+  const el=document.getElementById('empReqOk'); el.textContent=ok?'✓ עומד':'✗ חסר'; el.style.color=ok?'var(--green)':'var(--red)';
+}
+function checkQuota(e){
+  const miss=[]; const q=e.quota.midweek;
+  [['morning','בוקר (אמצ״ש)'],['afternoon','צהריים (אמצ״ש)'],['night','לילה (אמצ״ש)']].forEach(([g,lbl])=>{
+    const need=q[g]; const have=countAvail(e.id,'midweek',g); if(have<need) miss.push({cat:lbl,need,have});
+  });
+  const needW=e.quota.weekend.total, haveW=countAvail(e.id,'weekend');
+  if(haveW<needW) miss.push({cat:'סופ"ש',need:needW,have:haveW});
+  return {ok:miss.length===0, missing:miss};
+}
+function renderReqSummary(){
+  const e=EMPLOYEES.find(x=>x.id===currentEmp);
+  const grid=document.getElementById('reqGrid'); const q=e.quota.midweek;
+  const rows=[
+    ['☀️ בוקר · אמצע שבוע', q.morning, countAvail(e.id,'midweek','morning')],
+    ['🌆 צהריים · אמצע שבוע', q.afternoon, countAvail(e.id,'midweek','afternoon')],
+    ['🌙 לילה · אמצע שבוע', q.night, countAvail(e.id,'midweek','night')],
+    ['🏖 סופ"ש · כל סוג', e.quota.weekend.total, countAvail(e.id,'weekend')],
+  ];
+  grid.innerHTML=`<div class="rh">קטגוריה</div><div class="rh">נדרש</div><div class="rh">סומן</div>`;
+  rows.forEach(([cat,need,have])=>{
+    const okc=have>=need;
+    grid.innerHTML+=`<div class="req-cat">${cat}</div><div>${need}</div><div class="${okc?'ok':'miss'}">${have} ${okc?'✓':'⚠'}</div>`;
+  });
+}
+function renderTabit(){
+  const e=EMPLOYEES.find(x=>x.id===currentEmp);
+  const SH_COLORS={ morning:'#4ade8033', afternoon:'#3b9eff33', night:'#fbbf2433' };
+  const wrap=document.getElementById('z-shifts'); wrap.innerHTML='';
+  SHIFT_GROUPS.forEach(g=>{
+    const block=document.createElement('div'); block.className='z-shift '+g.id;
+    // header — clicking the name toggles the WHOLE row
+    const allOn = [0,1,2,3,4,5,6].every(d=> availability[e.id][d][g.id]);
+    const head=document.createElement('div'); head.className='z-shift-head'; head.style.setProperty('--sh', SH_COLORS[g.id]);
+    head.innerHTML=`<div class="nm">${g.icon} ${g.name} <small>${POSITIONS[g.id].length} עמדות</small></div>
+                    <div class="toggle-all">${allOn?'בטל הכל':'סמן הכל'}</div>`;
+    head.onclick=()=>{ const turnOn=!allOn; for(let d=0; d<7; d++) availability[e.id][d][g.id]=turnOn; refreshAvailUI(); };
+    block.appendChild(head);
+    // days row
+    const days=document.createElement('div'); days.className='z-days';
+    for(let d=0; d<7; d++){
+      const yes=availability[e.id][d][g.id];
+      const day=document.createElement('div'); day.className='z-day'+(isWeekend(d)?' weekend':'');
+      day.innerHTML=`<span class="dn">${DSHORT[d]}</span><div class="z-pill ${yes?'yes':'no'}"></div><span class="dt">${DATES[d]}</span>`;
+      day.onclick=()=>{ availability[e.id][d][g.id]=!availability[e.id][d][g.id]; refreshAvailUI(); };
+      days.appendChild(day);
+    }
+    block.appendChild(days);
+    wrap.appendChild(block);
+  });
+}
+// single refresh entry-point keeps the availability grid, summary, stats and progress bar in sync
+function refreshAvailUI(){
+  renderTabit(); renderReqSummary(); updateEmpStats(); updateProgress();
+}
+function updateProgress(){
+  const e=EMPLOYEES.find(x=>x.id===currentEmp);
+  const need=quotaTotal(e);
+  const have=Math.min(countAvail(e.id), need);
+  const pct=need? Math.round(have/need*100):100;
+  const f=document.getElementById('zProgFill'); if(f) f.style.width=pct+'%';
+  const t=document.getElementById('zProgPct'); if(t) t.textContent=pct+'%';
+}
+function clearAvailability(){
+  const e=EMPLOYEES.find(x=>x.id===currentEmp);
+  for(let d=0; d<7; d++) SHIFT_GROUPS.forEach(g=> availability[e.id][d][g.id]=false);
+  refreshAvailUI(); toast('כל המשמרות סומנו כלא זמין','warn');
+}
+function submitAvailability(){
+  const e=EMPLOYEES.find(x=>x.id===currentEmp);
+  const {ok,missing}=checkQuota(e);
+  if(!ok){ const txt=missing.map(m=>`${m.cat}: ${m.have}/${m.need}`).join(' · '); toast(`✕ לא ניתן לשלוח — חסרה זמינות חובה: ${txt}`,'err'); return; }
+  toast(`✓ הזמינות נשלחה למנהל (${countAvail(e.id)} סימונים, עומד במכסת החוזה)`,'ok');
+}
+function renderEmpSchedule(){
+  const grid=document.getElementById('empSchedule'); calHeader(grid);
+  SHIFT_GROUPS.forEach(g=>{
+    const rl=document.createElement('div'); rl.className='cal-rowlabel'; rl.innerHTML=`<span class="shift-icon">${g.icon}</span> ${g.name}`; grid.appendChild(rl);
+    for(let d=0; d<7; d++){
+      const cell=document.createElement('div'); cell.className=`cell ${g.id}`+(isWeekend(d)?' weekend':'');
+      let mine=null; posList(d,g.id).forEach(p=>{ if(assignments[d][g.id][p.key]===currentEmp) mine=p; });
+      if(mine){
+        const e=EMPLOYEES.find(x=>x.id===currentEmp);
+        const slot=document.createElement('div'); slot.className=`slot ${e.role}`;
+        slot.innerHTML=`<span class="av" style="background:${e.color}">${e.name[0]}</span><span class="who"><b>אתה</b><span class="pos">${mine.label} · ${mine.start}–${mine.end}</span></span>`;
+        cell.appendChild(slot);
+        const sw=document.createElement('div'); sw.className='slot empty'; sw.style.cssText='cursor:pointer;border-style:solid;border-color:var(--border);color:var(--text-dim)'; sw.textContent='🔄 הצע החלפה';
+        sw.onclick=ev=>{ev.stopPropagation(); toast('בקשת החלפה נשלחה (דמו)','ok');};
+        cell.appendChild(sw);
+      } else { cell.style.opacity='0.4'; const m=document.createElement('div'); m.style.cssText='margin:auto;color:var(--text-faint);font-size:15px'; m.textContent='—'; cell.appendChild(m); }
+      grid.appendChild(cell);
+    }
+  });
+}
+
+/* =====================================================================
+   NAV + UTIL
+   ===================================================================== */
+function switchRole(r){
+  document.getElementById('managerView').classList.toggle('active',r==='manager');
+  document.getElementById('employeeView').classList.toggle('active',r==='employee');
+  document.getElementById('btnManager').classList.toggle('active',r==='manager');
+  document.getElementById('btnEmployee').classList.toggle('active',r==='employee');
+  if(r==='employee') loadEmployee();
+  if(r==='manager'){
+    // the manager always schedules the CURRENT week — snapshot whatever the
+    // employee was viewing, then make sure week 0 is the active data.
+    snapshotCurrentWeek();
+    if(weekOffset!==0){ weekOffset=0; loadWeek(0); }
+    renderMgrCalendar(); renderEmpTable(); renderAvailMatrix();
+  }
+}
+function mgrTab(name,el){
+  document.querySelectorAll('#managerView .tabs button').forEach(b=>b.classList.remove('active')); el.classList.add('active');
+  document.querySelectorAll('#managerView .subview').forEach(v=>v.classList.remove('active'));
+  document.getElementById('mgr-'+name).classList.add('active');
+  if(name==='employees')renderEmpTable(); if(name==='availability')renderAvailMatrix(); if(name==='schedule')renderMgrCalendar();
+}
+function empTab(name,el){
+  document.querySelectorAll('#employeeView .tabs button').forEach(b=>b.classList.remove('active')); el.classList.add('active');
+  document.querySelectorAll('#employeeView .subview').forEach(v=>v.classList.remove('active'));
+  document.getElementById('emp-'+name).classList.add('active');
+  if(name==='myschedule')renderEmpSchedule();
+}
+let toastTimer;
+function toast(msg,type=''){ const t=document.getElementById('toast'); t.textContent=msg; t.className='toast show '+type; clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.classList.remove('show'),3200); }
+
+/* init */
+seedAvailability(); emptyAssignments(); buildEmpSelect();
+snapshotCurrentWeek(); // store week 0 so navigation preserves it
+renderMgrCalendar(); renderEmpTable(); renderAvailMatrix();
+</script>
+</body>
+</html>
